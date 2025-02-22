@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const QuestionnairePage = () => {
     const [questions, setQuestions] = useState([]);
     const [selectedOptions, setSelectedOptions] = useState({});
-    const [totalScore, setTotalScore] = useState(0);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        fetch('http://localhost:5000/questions') // Replace with actual API
+        fetch(`http://localhost:5000/questions`) // Replace with actual API
             .then((response) => response.json())
             .then((data) => {
-                console.log(data); // Log the API response to inspect the data structure
+                // Filter questions with category "proman"
+                
                 const filteredQuestions = data
-                    .filter((question) => question.id >= 11)  // Check this condition
+                    .filter((question) => question.category.toLowerCase() === 'prowoman')
                     .map((question, index) => ({
                         ...question,
                         localId: index + 1,
                     }));
-                if (filteredQuestions.length === 0) {
-                    console.log('No questions available starting from ID 11');
-                }
+
                 setQuestions(filteredQuestions);
                 setLoading(false);
             })
@@ -29,7 +29,6 @@ const QuestionnairePage = () => {
             });
     }, []);
 
-
     const handleOptionChange = (questionId, option) => {
         setSelectedOptions({
             ...selectedOptions,
@@ -38,23 +37,24 @@ const QuestionnairePage = () => {
     };
 
     const handleSubmit = () => {
-        const total = Object.values(selectedOptions).reduce(
+        const totalScore = Object.values(selectedOptions).reduce(
             (sum, option) => sum + option.weight,
             0
         );
-        setTotalScore(total);
 
+        // Send data to API
         fetch('http://localhost:5000/responses', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ totalScore: total }),
+            body: JSON.stringify({ totalScore }),
         })
             .then(() => {
-                // Save completion state in localStorage
+                // Save completion state
                 localStorage.setItem('testCompleted', 'true');
+                localStorage.setItem('totalScore', totalScore);
 
-                // Redirect to the result page
-                window.location.href = '/result';
+                // Redirect to result page
+                navigate('/result', { replace: true, state: { totalScore } });
             })
             .catch((error) => console.error(error));
     };
@@ -64,7 +64,7 @@ const QuestionnairePage = () => {
     }
 
     if (questions.length === 0) {
-        return <div style={styles.loading}>No questions available starting from ID 11.</div>;
+        return <div style={styles.loading}>No questions available for category "proman".</div>;
     }
 
     return (
@@ -99,6 +99,7 @@ const QuestionnairePage = () => {
         </div>
     );
 };
+
 
 const styles = {
     container: {

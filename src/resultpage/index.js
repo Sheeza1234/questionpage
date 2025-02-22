@@ -1,17 +1,23 @@
+
+
 import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const ResultPage = () => {
+    const navigate = useNavigate();
+
+
     useEffect(() => {
         if (!localStorage.getItem('testCompleted')) {
-            window.location.href = '/';  // Redirect to questionnaire page if not completed
+            navigate('/result', { replace: true });
         }
-    }, []);
+    }, [navigate]);
 
     return (
         <div style={styles.container}>
             <h2 style={styles.title}>Thank You!</h2>
             <p style={styles.message}>
-                You have an Agreeable Personality! We appreciate you taking the time to complete the test.
+                You have an <h3 style={{'color':'blue'}}>Agreeable Personality!</h3> We appreciate you taking the time to complete the test.
             </p>
         </div>
     );
@@ -25,15 +31,17 @@ const styles = {
         textAlign: 'center',
     },
     title: {
-        fontSize: '24px',
+        fontSize: '28px',
         fontWeight: 'bold',
         color: '#6200EE',
         marginBottom: '20px',
+        marginTop:'20px'
     },
     message: {
-        fontSize: '18px',
-        marginBottom: '20px',
+        fontSize: '24px',
+        color: '#333',
     },
 };
 
 export default ResultPage;
+
